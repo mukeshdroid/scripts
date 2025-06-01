@@ -4,7 +4,7 @@
 # setup_risczero_multi_gpu.sh
 #
 # Automates the installation and configuration steps for RiscZero multi-GPU
-# support on an AWS Ubuntu 22.04 instance with ≥200 GB storage.
+# support on an AWS Ubuntu 22.04 instance with ≥100 GB storage.
 #
 # USAGE:
 #   1) First run (pre-reboot): 
@@ -17,7 +17,7 @@
 #
 # NOTES:
 #   • The script assumes Ubuntu 22.04 LTS. It will abort if the OS is not 22.04.
-#   • It checks for at least 200 GB free space on "/"—if you attached a larger EBS
+#   • It checks for at least 100 GB free space on "/"—if you attached a larger EBS
 #     volume as root, this should pass. Otherwise it will warn and exit.
 #   • If you want to tweak versions (Rust, risczero, bento_cli, branch names, etc.),
 #     see the comments in each section below.
@@ -27,7 +27,7 @@
 #   • Before running, ensure you are already on an AWS instance with:
 #       – Ubuntu 22.04 LTS AMI
 #       – A multi-GPU instance type (e.g., g6.12xlarge, p4d.24xlarge, etc.)
-#       – At least 200 GB of root (/) storage attached (or a separate mount with ≥200 GB)
+#       – At least 100 GB of root (/) storage attached (or a separate mount with ≥100 GB)
 #
 #   • This script should be run as root (or via sudo). It will refuse to run otherwise.
 #
@@ -50,7 +50,7 @@ BENTO_BRANCH="mukesh/add_bento_to_v2.0"
 BOUNDLESS_REPO="https://github.com/alpenlabs/boundless"
 BOUNDLESS_BRANCH="mukesh/multiple_gpu"
 # Minimum free space (in GB) required on '/'
-MIN_FREE_GB=200
+MIN_FREE_GB=100
 
 #───────────────────────────────────────────────────────────────────────────#
 #  Helper Functions                                                        #
