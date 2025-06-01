@@ -145,7 +145,6 @@ if [ "$MODE" = "pre-reboot" ]; then
   echo "────────────────────────────────────────────────────────────────────────"
   echo ""
   apt update
-  apt upgrade -y
 
   # build-essential provides gcc, g++, make, etc.
   apt install -y build-essential
