@@ -127,20 +127,19 @@ if [ "$MODE" = "pre-reboot" ]; then
   echo "  STEP 2: Install Rust (via rustup) as ubuntu"
   echo "────────────────────────────────────────────────────────────────────────"
   echo ""
-  # Run the rustup installer as ubuntu. This places ~/.cargo in /home/ubuntu/.cargo
+  
+  # 2.a) Run the rustup installer under ubuntu. This creates /home/ubuntu/.cargo.
   sudo -u ubuntu bash -lc "curl --proto '=https' --tlsv1.2 -sSf \"$RUSTUP_INIT_URL\" | sh -s -- -y"
   
-  # Now ensure the ubuntu user’s ~/.cargo/bin is on PATH for the rest of the ubuntu‐commands.
-  # We’ll reload ubuntu’s ~/.bashrc (or ~/.zshrc) so that PATH="$HOME/.cargo/bin" takes effect.
-  sudo -u ubuntu bash -lc "source ~/.bashrc 2>/dev/null || source ~/.zshrc 2>/dev/null"
+  # 2.b) Source ~/.cargo/env as ubuntu, so that `rustc` and `cargo` immediately appear on ubuntu’s $PATH.
+  #      The file $HOME/.cargo/env was just written by the rustup installer.
+  sudo -u ubuntu bash -lc "source ~/.cargo/env"
   
-  # (Optional) Verify under ubuntu that rustc is installed:
+  # 2.c) (Optional) Verify under ubuntu that rustc is now available.
   sudo -u ubuntu bash -lc "rustc --version"
   
-  # For the remainder of any echo/logging under root, you can still print a confirmation:
+  # 2.d) Print a confirmation under the root script context.
   echo "→ Rust installed under /home/ubuntu/.cargo (user: ubuntu)."
-
-  . "$HOME/.cargo/env"
 
   ##############################################################################
   # 3. Install build dependencies and Just
