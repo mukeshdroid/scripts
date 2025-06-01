@@ -51,7 +51,7 @@ BOUNDLESS_REPO="https://github.com/alpenlabs/boundless"
 BOUNDLESS_BRANCH="mukesh/multiple_gpu"
 # Minimum free space (in GB) required on '/'
 MIN_FREE_GB=100
-
+UBUNTU_HOME="/home/ubuntu"
 #───────────────────────────────────────────────────────────────────────────#
 #  Helper Functions                                                        #
 #───────────────────────────────────────────────────────────────────────────#
@@ -119,20 +119,20 @@ if [ "$MODE" = "pre-reboot" ]; then
   check_os
   check_disk_space
 
-  ##############################################################################
+  #───────────────────────────────────────────────────────────────────────────#
   # 2. Install Rust (via rustup) — but AS ubuntu, not root
-  ##############################################################################
+  #───────────────────────────────────────────────────────────────────────────#
   echo ""
   echo "────────────────────────────────────────────────────────────────────────"
   echo "  STEP 2: Install Rust (via rustup) as ubuntu"
   echo "────────────────────────────────────────────────────────────────────────"
   echo ""
   
-  # 2.a) Run the rustup installer under ubuntu. This creates /home/ubuntu/.cargo.
+  # 2.a) Run the rustup installer as ubuntu. This creates /home/ubuntu/.cargo.
   sudo -u ubuntu bash -lc "curl --proto '=https' --tlsv1.2 -sSf \"$RUSTUP_INIT_URL\" | sh -s -- -y"
   
   # 2.b) Source ~/.cargo/env as ubuntu, so that `rustc` and `cargo` immediately appear on ubuntu’s $PATH.
-  #      The file $HOME/.cargo/env was just written by the rustup installer.
+  #      The file $HOME/.cargo/env was written by rustup above.
   sudo -u ubuntu bash -lc "source ~/.cargo/env"
   
   # 2.c) (Optional) Verify under ubuntu that rustc is now available.
@@ -177,30 +177,29 @@ if [ "$MODE" = "pre-reboot" ]; then
   apt install -y nvtop
   echo "→ nvtop installed."
 
-  ##############################################################################
-  # 5. Install risczero (under ubuntu, not root)
-  ##############################################################################
+  #───────────────────────────────────────────────────────────────────────────#
+  # 5. Install RiscZero (rzup + cargo-risczero) AS ubuntu
+  #───────────────────────────────────────────────────────────────────────────#
   echo ""
   echo "────────────────────────────────────────────────────────────────────────"
   echo "  STEP 5: Install RiscZero (rzup + cargo-risczero) as ubuntu"
   echo "────────────────────────────────────────────────────────────────────────"
   echo ""
-
-  # 5.a) Use sudo -u ubuntu so that RiscZero is placed into /home/ubuntu/.risc0, not /root/.risc0.
-  #     The ubuntu user must already exist (it does by default on standard EC2 Ubuntu AMIs).
-  sudo -u ubuntu bash -c "curl -L \"$RISCZERO_CLI_INSTALLER\" | bash"
-
-  # 5.b) Now force ubuntu’s login shell to re‐load ~/.bashrc or ~/.zshrc (whatever got updated),
-  #      so that $HOME/.risc0/bin appears in ubuntu’s PATH immediately.
+  
+  # 5.a) Run the RiscZero installer as ubuntu. This writes /home/ubuntu/.risc0.
+  sudo -u ubuntu bash -lc "curl -L \"$RISCZERO_CLI_INSTALLER\" | bash"
+  
+  # 5.b) Reload ubuntu’s shell so that ~/.risc0/bin is on PATH.
+  #      (Rustup already appended the PATH export into ~/.bashrc or ~/.zshrc.)
   sudo -u ubuntu bash -lc "source ~/.bashrc 2>/dev/null || source ~/.zshrc 2>/dev/null"
-
-  # 5.c) Next, invoke rzup (as ubuntu) to install the cargo-risczero plugin:
-  sudo -u ubuntu bash -lc "rzup install cargo-risczero \"$CARGO_RISCZERO_PLUGIN_VERSION\""
-
-  # 5.d) Optionally install the recommended Rust toolchain via rzup (still as ubuntu):
+  
+  # 5.c) FIRST install the Rust toolchain under ubuntu (so that rzup can compile cargo-risczero).
   sudo -u ubuntu bash -lc "rzup install rust"
-
-  echo "→ risczero installed for ubuntu (cargo-risczero v${CARGO_RISCZERO_PLUGIN_VERSION})."
+  
+  # 5.d) Now install the cargo-risczero plugin (requires rustc to exist).
+  sudo -u ubuntu bash -lc "rzup install cargo-risczero \"$CARGO_RISCZERO_PLUGIN_VERSION\""
+  
+  echo "→ RiscZero installed for ubuntu (cargo-risczero v${CARGO_RISCZERO_PLUGIN_VERSION})."
 
   ##############################################################################
   # 6. Install bento_cli (via Cargo) as ubuntu
