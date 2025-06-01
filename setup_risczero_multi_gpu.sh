@@ -140,6 +140,8 @@ if [ "$MODE" = "pre-reboot" ]; then
   # For the remainder of any echo/logging under root, you can still print a confirmation:
   echo "→ Rust installed under /home/ubuntu/.cargo (user: ubuntu)."
 
+  . "$HOME/.cargo/env"
+
   ##############################################################################
   # 3. Install build dependencies and Just
   ##############################################################################
