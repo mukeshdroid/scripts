@@ -40,7 +40,7 @@ set -euo pipefail
 #───────────────────────────────────────────────────────────────────────────#
 RUSTUP_INIT_URL="https://sh.rustup.rs"        # Rust installer (defaults to latest stable)
 JUST_VERSION="latest"                         # If you want a specific Just version, replace "latest" with, e.g., "1.14.0"
-RIS CZERO_CLI_INSTALLER="https://risczero.com/install"
+RISCZERO_CLI_INSTALLER="https://risczero.com/install"
 # Pin which Cargo RiscZero plugin version you want:
 CARGO_RISCZERO_PLUGIN_VERSION="2.0.2"
 # bento_cli repo details:
