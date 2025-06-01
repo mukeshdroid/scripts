@@ -173,62 +173,67 @@ if [ "$MODE" = "pre-reboot" ]; then
   echo "→ nvtop installed."
 
   ##############################################################################
-  # 5. Install risczero
+  # 5. Install risczero (under ubuntu, not root)
   ##############################################################################
   echo ""
   echo "────────────────────────────────────────────────────────────────────────"
-  echo "  STEP 5: Install RiscZero (rzup + cargo-risczero)"
+  echo "  STEP 5: Install RiscZero (rzup + cargo-risczero) as ubuntu"
   echo "────────────────────────────────────────────────────────────────────────"
   echo ""
-  # The official installer script for rzup
-  curl -L "$RISCZERO_CLI_INSTALLER" | bash
 
+  # 5.a) Use sudo -u ubuntu so that RiscZero is placed into /home/ubuntu/.risc0, not /root/.risc0.
+  #     The ubuntu user must already exist (it does by default on standard EC2 Ubuntu AMIs).
+  sudo -u ubuntu bash -c "curl -L \"$RISCZERO_CLI_INSTALLER\" | bash"
 
-  # 2) Reload whichever rc‐file got updated, so `rzup` appears in $PATH right away:
-  source "$HOME/.bashrc" 2>/dev/null || true
-  source "$HOME/.zshrc"  2>/dev/null || true
+  # 5.b) Now force ubuntu’s login shell to re‐load ~/.bashrc or ~/.zshrc (whatever got updated),
+  #      so that $HOME/.risc0/bin appears in ubuntu’s PATH immediately.
+  sudo -u ubuntu bash -lc "source ~/.bashrc 2>/dev/null || source ~/.zshrc 2>/dev/null"
 
-  # Install the Cargo RiscZero plugin at the desired version
-  rzup install cargo-risczero "$CARGO_RISCZERO_PLUGIN_VERSION"
-  # Optionally install the Rust toolchain that RiscZero recommends
-  rzup install rust
-  echo "→ risczero installed (cargo-risczero v${CARGO_RISCZERO_PLUGIN_VERSION})."
+  # 5.c) Next, invoke rzup (as ubuntu) to install the cargo-risczero plugin:
+  sudo -u ubuntu bash -lc "rzup install cargo-risczero \"$CARGO_RISCZERO_PLUGIN_VERSION\""
 
-  ##############################################################################
-  # 6. Install bento_cli (via Cargo from our GitHub fork/branch)
-  ##############################################################################
-  echo ""
-  echo "────────────────────────────────────────────────────────────────────────"
-  echo "  STEP 6: Install bento_cli via Cargo"
-  echo "────────────────────────────────────────────────────────────────────────"
-  echo ""
-  # This clones just long enough to build. If you want to pin a different branch,
-  # update BENTO_BRANCH above.
-  cargo install --git "$BENTO_REPO" --branch "$BENTO_BRANCH" bento-client --bin bento_cli
-  echo "→ bento_cli installed from branch '$BENTO_BRANCH'."
+  # 5.d) Optionally install the recommended Rust toolchain via rzup (still as ubuntu):
+  sudo -u ubuntu bash -lc "rzup install rust"
+
+  echo "→ risczero installed for ubuntu (cargo-risczero v${CARGO_RISCZERO_PLUGIN_VERSION})."
 
   ##############################################################################
-  # 7. Clone the Boundless repo and checkout your branch
+  # 6. Install bento_cli (via Cargo) as ubuntu
   ##############################################################################
   echo ""
   echo "────────────────────────────────────────────────────────────────────────"
-  echo "  STEP 7: Clone Boundless repo + checkout branch"
+  echo "  STEP 6: Install bento_cli via Cargo (as ubuntu)"
   echo "────────────────────────────────────────────────────────────────────────"
   echo ""
-  # Choose the directory where you want to clone boundless; by default, we use /home/ubuntu/boundless
-  BOUNDLESS_DIR="$HOME/boundless"
-  if [ -d "$BOUNDLESS_DIR" ]; then
-    echo "→ '$BOUNDLESS_DIR' already exists. Skipping clone. Checking out branch..."
-    cd "$BOUNDLESS_DIR"
-    git fetch
-    git checkout "$BOUNDLESS_BRANCH"
-    git pull origin "$BOUNDLESS_BRANCH"
-  else
-    git clone "$BOUNDLESS_REPO" "$BOUNDLESS_DIR"
-    cd "$BOUNDLESS_DIR"
-    git checkout "$BOUNDLESS_BRANCH"
-  fi
-  echo "→ Boundless cloned into '$BOUNDLESS_DIR' and on branch '$BOUNDLESS_BRANCH'."
+  sudo -u ubuntu bash -lc "cargo install --git \"$BENTO_REPO\" \
+                            --branch \"$BENTO_BRANCH\" \
+                            bento-client --bin bento_cli"
+  echo "→ bento_cli installed for ubuntu (branch '$BENTO_BRANCH')."
+
+  ##############################################################################
+  # 7. Clone Boundless repo + checkout branch (as ubuntu)
+  ##############################################################################
+  echo ""
+  echo "────────────────────────────────────────────────────────────────────────"
+  echo "  STEP 7: Clone Boundless repo + checkout branch (as ubuntu)"
+  echo "────────────────────────────────────────────────────────────────────────"
+  echo ""
+  BOUNDLESS_DIR=\"\$UBUNTU_HOME/boundless\"
+
+  sudo -u ubuntu bash -lc "
+    if [ -d \"$BOUNDLESS_DIR\" ]; then
+      echo \"→ '$BOUNDLESS_DIR' already exists. Skipping clone. Checking out branch...\"
+      cd \"$BOUNDLESS_DIR\"
+      git fetch
+      git checkout \"$BOUNDLESS_BRANCH\"
+      git pull origin \"$BOUNDLESS_BRANCH\"
+    else
+      git clone \"$BOUNDLESS_REPO\" \"$BOUNDLESS_DIR\"
+      cd \"$BOUNDLESS_DIR\"
+      git checkout \"$BOUNDLESS_BRANCH\"
+    fi
+  "
+  echo "→ Boundless cloned into '/home/ubuntu/boundless' (branch '$BOUNDLESS_BRANCH')."
 
   ##############################################################################
   # 8. Install NVIDIA drivers and Docker & then REBOOT
