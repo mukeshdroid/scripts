@@ -185,6 +185,7 @@ if [ "$MODE" = "pre-reboot" ]; then
 
   # After the above, rzup should be in ~/.cargo/bin/rzup; ensure PATH
   export PATH="$HOME/.cargo/bin:$PATH"
+  source "/root/.bashrc"
 
   # Install the Cargo RiscZero plugin at the desired version
   rzup install cargo-risczero "$CARGO_RISCZERO_PLUGIN_VERSION"
