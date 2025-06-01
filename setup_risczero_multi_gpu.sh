@@ -183,9 +183,10 @@ if [ "$MODE" = "pre-reboot" ]; then
   # The official installer script for rzup
   curl -L "$RISCZERO_CLI_INSTALLER" | bash
 
-  # After the above, rzup should be in ~/.cargo/bin/rzup; ensure PATH
-  export PATH="$HOME/.cargo/bin:$PATH"
-  source "/root/.bashrc"
+
+  # 2) Reload whichever rc‐file got updated, so `rzup` appears in $PATH right away:
+  source "$HOME/.bashrc" 2>/dev/null || true
+  source "$HOME/.zshrc"  2>/dev/null || true
 
   # Install the Cargo RiscZero plugin at the desired version
   rzup install cargo-risczero "$CARGO_RISCZERO_PLUGIN_VERSION"
