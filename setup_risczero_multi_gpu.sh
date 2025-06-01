@@ -191,10 +191,8 @@ if [ "$MODE" = "pre-reboot" ]; then
   
   # 5.b) Reload ubuntu’s shell so that ~/.risc0/bin is on PATH.
   #      (Rustup already appended the PATH export into ~/.bashrc or ~/.zshrc.)
-  sudo -u ubuntu bash -lc '
-  source /home/ubuntu/.bashrc 2>/dev/null || \
-  source /home/ubuntu/.zshrc  2>/dev/null
-  '
+  sudo -u ubuntu bash -lc "source /home/ubuntu/.bashrc"
+
   
   # 5.c) FIRST install the Rust toolchain under ubuntu (so that rzup can compile cargo-risczero).
   sudo -u ubuntu bash -lc "rzup install rust"
