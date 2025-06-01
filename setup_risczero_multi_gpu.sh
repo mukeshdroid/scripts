@@ -185,18 +185,22 @@ if [ "$MODE" = "pre-reboot" ]; then
   echo "  STEP 5: Install RiscZero (rzup + cargo-risczero) as ubuntu"
   echo "────────────────────────────────────────────────────────────────────────"
   echo ""
-  
+
   # 5.a) Run the RiscZero installer as ubuntu. This writes /home/ubuntu/.risc0.
-  sudo -u ubuntu bash -lc "curl -L \"$RISCZERO_CLI_INSTALLER\" | bash"
-  
-  # 5.b) Reload ubuntu’s shell so that ~/.risc0/bin is on PATH.
-  #      (Rustup already appended the PATH export into ~/.bashrc)
-  # 5.c) FIRST install the Rust toolchain under ubuntu (so that rzup can compile cargo-risczero).
-  sudo -u ubuntu bash -lc "source $UBUNTU_HOME/.bashrc && rzup install rust"
-  
-  # 5.d) Now install the cargo-risczero plugin (requires rustc to exist).
-  sudo -u ubuntu bash -lc "rzup install cargo-risczero \"$CARGO_RISCZERO_PLUGIN_VERSION\""
-  
+  sudo -H -u ubuntu bash -lc "curl -L \"$RISCZERO_CLI_INSTALLER\" | bash"
+
+  # 5.b+c) In one login-shell, put ~/.risc0/bin on PATH, then install the Rust toolchain:
+  sudo -H -u ubuntu bash -lc "
+    export PATH=\"\$HOME/.risc0/bin:\$PATH\" && \
+    rzup install rust
+  "
+
+  # 5.d) Finally, put ~/.risc0/bin on PATH again and install the cargo-risczero plugin:
+  sudo -H -u ubuntu bash -lc "
+    export PATH=\"\$HOME/.risc0/bin:\$PATH\" && \
+    rzup install cargo-risczero \"$CARGO_RISCZERO_PLUGIN_VERSION\"
+  "
+
   echo "→ RiscZero installed for ubuntu (cargo-risczero v${CARGO_RISCZERO_PLUGIN_VERSION})."
 
   ##############################################################################
