@@ -211,9 +211,31 @@ if [ "$MODE" = "pre-reboot" ]; then
   echo "  STEP 6: Install bento_cli via Cargo (as ubuntu)"
   echo "────────────────────────────────────────────────────────────────────────"
   echo ""
-  sudo -u ubuntu bash -lc "cargo install --git \"$BENTO_REPO\" \
-                            --branch \"$BENTO_BRANCH\" \
-                            bento-client --bin bento_cli"
+
+  sudo -H -u ubuntu bash -lc '
+    #
+    # 6.a) Find the RiscZero Rust toolchain directory (e.g. "v1.85.0-rust-x86_64-unknown-linux-gnu"):
+    #
+    TC=$(ls ~/.risc0/toolchains | grep rust-)
+
+    #
+    # 6.b) Prepend that toolchain’s "bin" (which contains "rustc" and "cargo")
+    #      as well as ~/.risc0/bin (for "rzup") and ~/.cargo/bin (for any user cargo installs)
+    #      into PATH. This guarantees that when we run "cargo install", Cargo uses
+    #      RiscZero’s Rust, not the system Rust.
+    #
+    export PATH="$HOME/.risc0/toolchains/$TC/bin:$HOME/.risc0/bin:$HOME/.cargo/bin:$PATH"
+
+    #
+    # 6.c) Now run "cargo install" to build bento-client from our GitHub fork/branch:
+    #
+    cargo install \
+      --git "'"$BENTO_REPO"'" \
+      --branch "'"$BENTO_BRANCH"'" \
+      bento-client \
+      --bin bento_cli
+  '
+
   echo "→ bento_cli installed for ubuntu (branch '$BENTO_BRANCH')."
 
   ##############################################################################
