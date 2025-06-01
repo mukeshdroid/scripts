@@ -181,7 +181,7 @@ if [ "$MODE" = "pre-reboot" ]; then
   echo "────────────────────────────────────────────────────────────────────────"
   echo ""
   # The official installer script for rzup
-  curl -L "$RIS CZERO_CLI_INSTALLER" | bash
+  curl -L "$RISCZERO_CLI_INSTALLER" | bash
 
   # After the above, rzup should be in ~/.cargo/bin/rzup; ensure PATH
   export PATH="$HOME/.cargo/bin:$PATH"
